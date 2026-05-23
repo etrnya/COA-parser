@@ -1,5 +1,9 @@
 # 🔬 AI COA Document Parser & Verification Hub
 
+<p align="center">
+  <b>English</b> | <a href="README_zh.md">繁體中文說明書</a>
+</p>
+
 An industrial-grade, open-source AI desktop application to parse, validate, and standardize chemical and food laboratory **Certificate of Analysis (COA)** documents. 
 
 Equipped with a **Human-in-the-loop Verification Hub**, **Deterministic Rules Engine**, **Persistent SQLite Task Queue**, and **Google Sheets Collaborative Sync (GAS)**, this tool automates laboratory inventory logging with high reliability and zero concurrency locking issues.

@@ -1,5 +1,9 @@
 # 🔬 AI COA 證書解析與驗證中心 (AI COA Document Parser & Verification Hub)
 
+<p align="center">
+  <a href="README.md">English Document</a> | <b>繁體中文</b>
+</p>
+
 一個專為化學、生物及食品實驗室設計的工業級開源桌面應用程式，用於自動解析、驗證並標準化 **分析證明書 (Certificate of Analysis, COA)** 文件。
 
 本系統配備了**人機協同驗證中心 (Human-in-the-loop Verification Hub)**、**確定性規則引擎**、**持久性 SQLite 任務排程佇列**以及 **Google Sheets 團隊協同快取同步 (GAS)**，可自動化登錄實驗室庫存，並具備優異的可靠度與零併發鎖定（Concurrency Locking）特性。
