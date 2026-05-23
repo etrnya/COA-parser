@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI COA 證書解析與驗證中心</title>
+    <!-- Prevent favicon.ico 404 DevTools popup -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;" class="logo-text-wrapper">
+                    <div class="logo-icon">🔬</div>
+                    <div class="logo-text">
+                        <h1 style="white-space: nowrap;">COA 解析助手</h1>
+                        <span style="white-space: nowrap;">實驗室專用 v1.7</span>
+                    </div>
+                </div>
+                <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="收合側邊欄">◀</button>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" id="nav-tasks" onclick="switchTab('tasks')">
+                    <span class="icon" title="排程儀表板">📋</span>
+                    <span class="nav-text">排程儀表板</span>
+                </button>
+                <button class="nav-item" id="nav-review" onclick="switchTab('review')">
+                    <span class="icon" title="人工驗證中心">🔍</span>
+                    <span class="nav-text">人工驗證中心</span>
+                    <span class="badge" id="review-counter">0</span>
+                </button>
+                <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+                    <span class="icon" title="系統設定面板">⚙️</span>
+                    <span class="nav-text">系統設定面板</span>
+                </button>
+                <button class="nav-item" id="nav-guide" onclick="openGuide()">
+                    <span class="icon" title="操作說明手冊">📖</span>
+                    <span class="nav-text">操作說明手冊</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="api-status-container" title="Gemini 已連線">
+                    <span class="dot green" id="api-status-dot"></span>
+                    <span class="status-text" id="api-status-text">Gemini 已連線</span>
+                </div>
+                <div class="status-indicator" id="gas-status-container" title="GAS 雲端未啟用">
+                    <span class="dot" id="gas-status-dot"></span>
+                    <span class="status-text" id="gas-status-text">GAS 雲端未啟用</span>
+                </div>
+                <div class="sidebar-copyright" style="font-size: 10px; color: var(--text-secondary); text-align: center; margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 8px; opacity: 0.6; white-space: nowrap;" title="開發者：etrnya">
+                    <span class="copyright-full">© 2026 etrnya. All rights reserved.</span>
+                    <span class="copyright-short" style="display: none;">© etrnya</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="top-bar">
+                <div class="folder-select-bar">
+                    <button class="btn btn-primary" id="btn-select-folder" onclick="selectFolder()">
+                        <span>📁</span> 選擇 COA 資料夾
+                    </button>
+                    <span class="selected-path" id="selected-folder-path">未選擇任何資料夾</span>
+                </div>
+                
+                <div class="pipeline-actions">
+                    <button class="btn btn-success" id="btn-start" onclick="startPipeline()" disabled>
+                        <span>▶</span> 開始分析
+                    </button>
+                    <button class="btn btn-danger" id="btn-cancel" onclick="cancelPipeline()" disabled>
+                        <span>⏹</span> 取消
+                    </button>
+                    <button class="btn btn-secondary" id="btn-export" onclick="exportExcel()">
+                        <span>📥</span> 匯出 Excel 報告
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB: Queue Dashboard -->
+            <section class="tab-pane active" id="pane-tasks">
+                <div class="pane-header">
+                    <h2>排程儀表板</h2>
+                    <p>掃描目錄以對證書檔案進行自動分類、AI 分析與資料提取。</p>
+                </div>
+                
+                <!-- Progress banner -->
+                <div class="progress-banner" id="progress-banner" style="display: none;">
+                    <div class="progress-details">
+                        <span id="progress-status">分析處理中...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Stats summary grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>總檔案數</h3>
+                        <div class="val" id="stat-total">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>分析已完成</h3>
+                        <div class="val green-text" id="stat-completed">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>待人工確認</h3>
+                        <div class="val orange-text" id="stat-review">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>分析失敗</h3>
+                        <div class="val red-text" id="stat-failed">0</div>
+                    </div>
+                </div>
+
+                <!-- Task grid table -->
+                <div class="table-container">
+                    <div class="table-actions">
+                        <h3>待處理隊列</h3>
+                        <button class="btn btn-sm btn-danger" onclick="clearQueue()">🗑️ 清空本機隊列</button>
+                    </div>
+                    <table class="data-table" id="tasks-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%">檔案名稱</th>
+                                <th style="width: 15%">處理狀態</th>
+                                <th style="width: 35%">異常警告 / 提示訊息</th>
+                                <th style="width: 10%">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasks-tbody">
+                            <tr>
+                                <td colspan="4" class="empty-state">隊列目前是空的。請選擇包含 COA 證書的資料夾以開始。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB: Verification Hub (Human-in-the-Loop Double Column View) -->
+            <section class="tab-pane" id="pane-review">
+                <div class="split-view">
+                    <!-- Left: PDF/Image Document Viewer -->
+                    <div class="doc-viewer-card">
+                        <div class="viewer-header">
+                            <h3 id="viewer-doc-title">文件預覽</h3>
+                            <div class="viewer-controls">
+                                <button class="btn btn-icon" onclick="zoomImage(-0.1)">➖</button>
+                                <span id="zoom-level">100%</span>
+                                <button class="btn btn-icon" onclick="zoomImage(0.1)">➕</button>
+                                <span class="divider">|</span>
+                                <button class="btn btn-icon" id="prev-page-btn" onclick="changePreviewPage(-1)" disabled>◀</button>
+                                <span id="page-counter">第 1 頁 / 共 1 頁</span>
+                                <button class="btn btn-icon" id="next-page-btn" onclick="changePreviewPage(1)" disabled>▶</button>
+                            </div>
+                        </div>
+                        <div class="viewer-body" id="document-preview-container">
+                            <div class="preview-placeholder">請從左側清單中選擇一個需要確認的檔案以開始驗證。</div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Verification Fields Form -->
+                    <div class="form-card">
+                        <div class="form-header">
+                            <h3>數據驗證與校對</h3>
+                            <span class="shortcut-tip">💡 提示：按 <strong>Ctrl+Enter</strong> 儲存並自動跳轉至下一個檔案。</span>
+                        </div>
+                        
+                        <form id="review-fields-form" onsubmit="event.preventDefault(); submitReview();">
+                            <!-- Hidden input for file path tracking -->
+                            <input type="hidden" id="review-file-path">
+
+                            <!-- Brand -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-brand-raw">廠牌 (原始文字)</label>
+                                    <input type="text" id="review-brand-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-brand-std">廠牌 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('brand')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-brand-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-brand">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-brand">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Product Name -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-product-raw">產品名稱 (原始文字)</label>
+                                    <input type="text" id="review-product-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-product-std">產品名稱 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('product')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-product-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-product">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-product">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Batch Number -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-4">
+                                    <label for="review-batch-no">生產批號 (Batch No)</label>
+                                    <input type="text" id="review-batch-no" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-batch">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-batch">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- CAS Number -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-cas-raw">CAS Number (原始文字)</label>
+                                    <input type="text" id="review-cas-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-cas-std">CAS Number (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('cas')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-cas-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-cas">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-cas">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Molecular Weight -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-mw-raw">分子量 (原始文字)</label>
+                                    <input type="text" id="review-mw-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-mw-std">分子量 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('mw')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-mw-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-mw">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-mw">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Expiry Date -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-expiry-raw">有效期限 (原始文字)</label>
+                                    <input type="text" id="review-expiry-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-expiry-std">有效期限 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('expiry')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-expiry-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-expiry">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-expiry">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Purity -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-purity-raw">純度/含量 (原始文字)</label>
+                                    <input type="text" id="review-purity-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-purity-std">純度/含量 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('purity')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-purity-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-purity">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-purity">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Amount -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-amount-raw">包裝容量 (原始文字)</label>
+                                    <input type="text" id="review-amount-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-amount-std">包裝容量 (標準化) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('amount')">⬅️ 帶入原始</button></label>
+                                    <input type="text" id="review-amount-std" required>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-amount">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-amount">來源原文定位: N/A</div>
+
+                            <hr class="form-divider">
+
+                            <!-- Storage Conditions -->
+                            <div class="form-group-wrapper">
+                                <div class="form-group flex-2">
+                                    <label for="review-storage-raw">儲存條件 (原始文字)</label>
+                                    <input type="text" id="review-storage-raw" required>
+                                </div>
+                                <div class="form-group flex-2">
+                                    <label for="review-storage-std">儲存條件 (標準化對應) <button type="button" class="btn-copy-raw" onclick="copyRawToStd('storage')">⬅️ 帶入原始</button></label>
+                                    <select id="review-storage-std">
+                                        <option value="RT">RT (常溫)</option>
+                                        <option value="4°C">4°C (冷藏)</option>
+                                        <option value="-20°C">-20°C (冷凍)</option>
+                                    </select>
+                                </div>
+                                <div class="confidence-container">
+                                    <span class="badge-label">AI 置信度</span>
+                                    <span class="badge-conf" id="conf-storage">high</span>
+                                </div>
+                            </div>
+                            <div class="traceability-info" id="trace-storage">來源原文定位: N/A</div>
+
+                            <!-- Validation Warning Alerts -->
+                            <div class="validation-alerts" id="review-warnings-box" style="display:none;">
+                                <h4>⚠️ 數據校正警告：</h4>
+                                <ul id="review-warnings-list">
+                                </ul>
+                            </div>
+
+                            <!-- Footer Review Buttons -->
+                            <div class="review-form-footer">
+                                <button type="button" class="btn btn-secondary" onclick="skipTask(-1)">◀ 上一個檔案</button>
+                                <button type="button" class="btn btn-secondary" onclick="skipTask(1)">跳過檔案 ▶</button>
+                                <button type="submit" class="btn btn-success flex-1" id="btn-save-review">💾 儲存並繼續 (Ctrl+Enter)</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: Settings Panel -->
+            <section class="tab-pane" id="pane-settings">
+                <div class="pane-header">
+                    <h2>系統設定面板</h2>
+                    <p>設定 API 金鑰、Excel 匯出欄位順序以及數據標準化自動對應轉換字典。</p>
+                </div>
+                
+                <div class="settings-grid">
+                    <!-- Left: API and Cloud Sync Settings -->
+                    <div class="card">
+                        <h3>🔐 金鑰與雲端同步設定</h3>
+                        
+                        <div class="form-group">
+                            <label for="settings-gemini-key">Gemini API 金鑰</label>
+                            <div class="input-with-action">
+                                <input type="password" id="settings-gemini-key" placeholder="貼上您的 Gemini API Key...">
+                                <button class="btn btn-secondary btn-sm" onclick="togglePasswordView('settings-gemini-key')">👁️</button>
+                                <button class="btn btn-primary btn-sm" onclick="testAndSaveAPIKey()">儲存並測試</button>
+                            </div>
+                            <span class="input-helper">金鑰安全儲存於系統認證模組 (Keyring)。 <a href="#" onclick="openGuide()">如何取得金鑰？請見說明</a></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="settings-gas-url">Google Apps Script (GAS) 串接網址</label>
+                            <input type="text" id="settings-gas-url" placeholder="https://script.google.com/macros/s/.../exec">
+                            <span class="input-helper">啟用團隊共同協作 Google Sheet 資料庫同步。 <a href="#" onclick="openGuide()">設定方法說明</a></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>介面配色主題</label>
+                            <div style="display: flex; gap: 8px; margin-top: 6px;">
+                                <button type="button" class="btn btn-secondary btn-sm flex-1" id="theme-dark-btn" onclick="setTheme('dark')">🌙 深色模式</button>
+                                <button type="button" class="btn btn-secondary btn-sm flex-1" id="theme-light-btn" onclick="setTheme('light')">☀️ 淺色模式</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Standardization Rules -->
+                    <div class="card">
+                        <h3>📏 數據標準化轉換規則</h3>
+                        
+                        <div class="form-group">
+                            <label for="settings-name-fmt">產品名稱字首格式</label>
+                            <select id="settings-name-fmt">
+                                <option value="Title Case">字首大寫 (例: Sulfabenzamide)</option>
+                                <option value="UPPERCASE">全大寫 (例: SULFABENZAMIDE)</option>
+                                <option value="lowercase">全小寫 (例: sulfabenzamide)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="settings-date-fmt">標準日期格式</label>
+                            <select id="settings-date-fmt">
+                                <option value="YYYY/M/D">YYYY/M/D (例: 2027/8/22)</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD (例: 2027-08-22)</option>
+                                <option value="YYYY/MM/DD">YYYY/MM/DD (例: 2027/08/22)</option>
+                            </select>
+                        </div>
+
+                        <!-- Storage Condition mappings -->
+                        <div class="form-group">
+                            <label>儲存條件溫度對應規則 (模糊匹配)</label>
+                            <div class="mapping-row">
+                                <span class="temp-label">-20°C</span>
+                                <input type="text" id="mapping-frozen" placeholder="freeze, frozen, -20">
+                            </div>
+                            <div class="mapping-row">
+                                <span class="temp-label">4°C</span>
+                                <input type="text" id="mapping-cold" placeholder="refrigerate, cold, 2-8">
+                            </div>
+                            <div class="mapping-row">
+                                <span class="temp-label">RT</span>
+                                <input type="text" id="mapping-rt" placeholder="room temp, RT, ambient">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column Sorting and Visibility Panel -->
+                <div class="card margin-top">
+                    <h3>📊 匯出欄位順序調整與開關</h3>
+                    <p>拖曳欄位上下調整順序，勾選/取消勾選控制該欄位是否匯出至 Excel 報表中。</p>
+                    
+                    <ul class="draggable-list" id="columns-sortable-list">
+                        <!-- Filled by JS dynamically -->
+                    </ul>
+                </div>
+
+                <div class="settings-actions">
+                    <button class="btn btn-success btn-large" onclick="saveSettings()">💾 儲存設定並套用</button>
+                </div>
+            </section>
+
+            <!-- Collapsible Bottom Log Console Drawer -->
+            <footer class="log-console-drawer collapsed" id="log-drawer">
+                <div class="drawer-header" onclick="toggleLogDrawer()">
+                    <span class="title">🖥️ 系統執行主控台日誌</span>
+                    <div class="header-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); copyAllLogs();">複製日誌</button>
+                        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); clearLogs();">清空日誌</button>
+                        <span class="arrow" id="log-drawer-arrow">▲</span>
+                    </div>
+                </div>
+                <div class="drawer-body" id="log-drawer-body">
+                    <div class="log-message system-log">[系統] 準備就緒。請選擇包含 COA 檔案的目錄以開始。</div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Notification system toast -->
+    <div id="toast" class="toast">設定已存入 API Key</div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作說明手冊與整合指南 - COA 解析助手</title>
+    <!-- Prevent favicon.ico 404 DevTools popup -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-tertiary: #27272a;
+            --border-color: #3f3f46;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --primary: #2563eb;
+            --primary-hover: #3b82f6;
+            --success: #16a34a;
+            --warning: #d97706;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding: 40px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 32px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            color: var(--primary-hover);
+        }
+
+        h2 {
+            font-size: 22px;
+            color: var(--text-primary);
+            margin-top: 36px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        ol, ul {
+            margin-bottom: 20px;
+            padding-left: 20px;
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        /* Callout alert design */
+        .alert {
+            background-color: var(--bg-secondary);
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 24px;
+        }
+
+        .alert-success {
+            border-left-color: var(--success);
+        }
+
+        .alert-warning {
+            border-left-color: var(--warning);
+        }
+
+        .alert h4 {
+            margin-top: 0;
+            margin-bottom: 6px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .alert p {
+            margin-bottom: 0;
+            font-size: 13px;
+        }
+
+        /* Code block container */
+        .code-container {
+            position: relative;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn-copy {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: 0.15s ease;
+        }
+
+        .btn-copy:hover {
+            background-color: var(--border-color);
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: #e4e4e7;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background-color: var(--bg-secondary);
+            color: #f43f5e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        kbd {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 0 var(--border-color);
+            color: var(--text-primary);
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        a {
+            color: var(--primary-hover);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔬 COA 解析助手 使用指南</h1>
+    <p>歡迎使用 AI COA 證書解析與驗證中心。請按照此指南申請免費的 Gemini API 金鑰、設定 Google 試算表（GAS）團隊雲端同步，並熟悉高效率的人工校對驗證工作流。</p>
+
+    <!-- Section 1: Gemini API Key Setup -->
+    <h2>🔑 步驟一：取得免費 Google Gemini API 金鑰</h2>
+    <p>本軟體使用 Google Gemini 多模態視覺 API 在本機解析 PDF 或圖片格式的 COA 證書。請按照以下步驟申請金鑰：</p>
+    <ol>
+        <li>前往 <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> 首頁。</li>
+        <li>登入您的 Google 帳號。</li>
+        <li>點擊左上角的藍色 <strong>"Get API key"</strong> 按鈕。</li>
+        <li>選擇專案（或新增專案），然後點擊 <strong>"Create API Key in existing project"</strong>。</li>
+        <li>複製生成的金鑰，回到本軟體，進入 <strong>「系統設定面板」</strong>，將金鑰貼上至 <strong>「Gemini API 金鑰」</strong> 輸入框，然後點擊右側的 <strong>「儲存並測試」</strong>。</li>
+    </ol>
+    <div class="alert">
+        <h4>🔒 安全性聲明</h4>
+        <p>您的 API 金鑰已透過作業系統內建的憑證庫（Windows 認證管理員/Keyring）進行加密儲存。金鑰絕不會傳送到 Google 官方 AI API 端點之外的任何第三方伺服器，安全無虞。</p>
+    </div>
+
+    <!-- Section 2: Google Sheets Cloud Setup -->
+    <h2>📊 步驟二：設定 Google 試算表 (GAS) 團隊共享同步</h2>
+    <p>若要啟用團隊共同協作（多人共享已經驗證過的 COA 快取、節省 AI 代幣消耗），可以透過 Google Apps Script (GAS) 串接雲端試算表：</p>
+    
+    <ol>
+        <li>在您的 Google 雲端硬碟建立一個新的「Google 試算表」。</li>
+        <li>打開該試算表，從上方選單中選擇 <strong>「擴充功能」</strong> ➔ <strong>「Apps Script」</strong>。</li>
+        <li>刪除程式碼編輯器內的原有內容，將下方提供的 **GAS 範本程式碼** 完整複製貼上進去。</li>
+        <li>點擊上方 💾 <strong>「儲存專案」</strong>。</li>
+        <li>點擊右上角的 <strong>「部署」</strong> ➔ <strong>「新增部署」</strong>。</li>
+        <li>點擊左側設定齒輪，選取類型為 <strong>「網頁應用程式」</strong> (Web app)。</li>
+        <li>進行部署設定：
+            <ul>
+                <li><strong>將應用程式執行為：</strong> 選擇「我」（您的 Google 帳號）。</li>
+                <li><strong>誰有權限存取：</strong> 選擇「任何人」(Anyone)（此設定用以允許桌面端進行 API 加密連線寫入）。</li>
+            </ul>
+        </li>
+        <li>點擊 <strong>「部署」</strong>，接著點擊 <strong>「授予存取權限」</strong> 並登入 Google 帳號授權寫入。</li>
+        <li>部署完成後，複製產生的 <strong>「網頁應用程式網址」</strong> (結尾通常為 <code>/exec</code>)。</li>
+        <li>回到本軟體的 <strong>「系統設定面板」</strong>，將網址貼入 <strong>「Google Apps Script (GAS) 串接網址」</strong> 輸入框，然後點擊下方 <strong>「儲存設定並套用」</strong>。</li>
+    </ol>
+
+    <div class="alert alert-success">
+        <h4>💡 團隊協作快取機制 (節省 API 成本)</h4>
+        <p>當設定完畢後，只要有任何同事在人工驗證中心儲存了一份 COA 證書，該檔案的雜湊值與驗證數據就會自動存入 Google 試算表。當其他同事掃描相同檔案或資料夾時，系統會優先比對試算表，若匹配到快取，將會「瞬間」載入數據，完全不耗費任何 Gemini API 金鑰額度！</p>
+    </div>
+
+    <!-- GAS Code Block -->
+    <div class="code-container">
+        <div class="code-header">
+            <span>Google Apps Script (GAS) 網頁端範本程式碼</span>
+            <button class="btn-copy" onclick="copyGasCode()">複製程式碼</button>
+        </div>
+        <pre><code id="gas-code-text">function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var action = e.parameter.action;
+  
+  if (action === "check_cache") {
+    var hash = e.parameter.hash;
+    var data = sheet.getDataRange().getValues();
+    
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][2] === hash) {
+        var result = {
+          product_raw: data[i][3],
+          product_std: data[i][4],
+          brand_raw: data[i][5],
+          brand_std: data[i][6],
+          batch_no: data[i][7],
+          expiry_raw: data[i][8],
+          expiry_std: data[i][9],
+          purity_raw: data[i][10],
+          purity_std: data[i][11],
+          amount_raw: data[i][12],
+          amount_std: data[i][13],
+          cas_no_raw: data[i][14],
+          cas_no_std: data[i][15],
+          mw_raw: data[i][16],
+          mw_std: data[i][17],
+          storage_raw: data[i][18],
+          storage_std: data[i][19]
+        };
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          found: true,
+          data: result
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success",
+      found: false
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "error",
+    message: "Invalid GET action"
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Timestamp", "File Name", "SHA256 Hash", 
+        "Product Name (Original)", "Product Name (Standardized)", 
+        "Brand (Original)", "Brand (Standardized)",
+        "Batch No", 
+        "Expiry Date (Original)", "Expiry Date (Standardized)", 
+        "Purity (Original)", "Purity (Standardized)", 
+        "Amount (Original)", "Amount (Standardized)",
+        "CAS Number (Original)", "CAS Number (Standardized)",
+        "Molecular Weight (Original)", "Molecular Weight (Standardized)",
+        "Storage Condition (Original)", "Storage Condition (Standardized)"
+      ]);
+    }
+    
+    var postData = JSON.parse(e.postData.contents);
+    
+    if (postData.action === "save_entry") {
+      var hash = postData.hash;
+      var data = sheet.getDataRange().getValues();
+      
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][2] === hash) {
+          var rowNum = i + 1;
+          sheet.getRange(rowNum, 1, 1, 20).setValues([[
+            new Date(),
+            postData.file_name,
+            hash,
+            postData.product_raw,
+            postData.product_std,
+            postData.brand_raw,
+            postData.brand_std,
+            postData.batch_no,
+            postData.expiry_raw,
+            postData.expiry_std,
+            postData.purity_raw,
+            postData.purity_std,
+            postData.amount_raw,
+            postData.amount_std,
+            postData.cas_no_raw,
+            postData.cas_no_std,
+            postData.mw_raw,
+            postData.mw_std,
+            postData.storage_raw,
+            postData.storage_std
+          ]]);
+          return ContentService.createTextOutput(JSON.stringify({
+            status: "success",
+            message: "Entry updated successfully"
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      
+      sheet.appendRow([
+        new Date(),
+        postData.file_name,
+        hash,
+        postData.product_raw,
+        postData.product_std,
+        postData.brand_raw,
+        postData.brand_std,
+        postData.batch_no,
+        postData.expiry_raw,
+        postData.expiry_std,
+        postData.purity_raw,
+        postData.purity_std,
+        postData.amount_raw,
+        postData.amount_std,
+        postData.cas_no_raw,
+        postData.cas_no_std,
+        postData.mw_raw,
+        postData.mw_std,
+        postData.storage_raw,
+        postData.storage_std
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "Entry appended successfully"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+    </div>
+
+    <!-- Section 3: High-efficiency review workflow -->
+    <h2>⌨️ 步驟三：快速鍵鍵盤確認流</h2>
+    <p>為了在處理大量證書檔案（例如 50+ 張 COA）時將人工確認的吞吐量最大化，<strong>人工驗證中心</strong> 支援了純鍵盤快速鍵操作：</p>
+    <ul>
+        <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> : <strong>儲存並繼續</strong>。自動儲存目前表單的修改值、將檔案在 SQLite 本機資料庫中標記為「已完成」、同步至雲端 Google Sheet，並「立刻」載入下一個待處理檔案。</li>
+        <li><kbd>Ctrl</kbd> + <kbd>↓ (向下方向鍵)</kbd> : <strong>跳過檔案</strong>。直接跳到下一個檔案而不儲存任何修改。</li>
+        <li><kbd>Ctrl</kbd> + <kbd>↑ (向上方向鍵)</kbd> : <strong>回到上一個</strong>。返回到隊列中的上一個檔案。</li>
+    </ul>
+
+    <div class="alert alert-warning">
+        <h4>🔍 數據異常警告</h4>
+        <p>凡是觸發規則引擎攔截的欄位（例如：有效期限已過期、純度不符合常規比例 0-100%、或者 Gemini 判斷置信度為「低 (low)」的欄位），驗證卡片下方都會亮起黃橘色的 <strong>「數據校正警告」</strong>。在審核這些檔案時請特別留意對照原文！</p>
+    </div>
+
+    <!-- Section 4: Export customizations -->
+    <h2>📈 步驟四：匯出 Excel 設定自訂</h2>
+    <p>在點擊右上角的「匯出 Excel 報告」之前，您可以在 <strong>「系統設定面板」</strong> 中針對 Excel 表單欄位自訂：</p>
+    <ul>
+        <li><strong>拖曳調整順序</strong>：以滑鼠按住三條線圖示 ☰ 上下拖曳，即可調整 Excel 匯出後的列順序，完美契合實驗室既有的登錄表。</li>
+        <li><strong>欄位顯示開關</strong>：取消勾選核取方塊可以將不需要的欄位隱藏，不匯出至 Excel 報表中。</li>
+        <li><strong>專業報表美化</strong>：產生的 <code>summary.xlsx</code> 已內建欄寬自動貼合、首行凍結（啟用篩選器）、以及深藍色表頭與粗體文字設計，可直接複製貼入實驗室日常工作記錄！</li>
+    </ul>
+
+    <script>
+        function copyGasCode() {
+            const codeText = document.getElementById('gas-code-text').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert("GAS 範本程式碼已成功複製到剪貼簿！");
+            }).catch(err => {
+                alert("複製失敗: " + err);
+            });
+        }
+    </script>
+</body>
+</html>
